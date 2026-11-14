@@ -1222,11 +1222,11 @@ def main() -> int:
     here = Path(__file__).resolve().parent.parent   # Core directory.
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--base", type=Path, default=here / "ucode_base.hex")
-    ap.add_argument("--hex", type=Path, default=here / "ucode.hex")
-    ap.add_argument("--mif", type=Path, default=here / "ucode.mif")
-    ap.add_argument("--recipe-svh", type=Path, default=here / "ucode_recipes.svh")
-    ap.add_argument("--recipe-manifest", type=Path, default=here / "ucode_recipes.md")
+    ap.add_argument("--base", type=Path, default=here / "src" / "ucode_base.hex")
+    ap.add_argument("--hex", type=Path, default=here / "src" / "ucode.hex")
+    ap.add_argument("--mif", type=Path, default=here / "src" / "ucode.mif")
+    ap.add_argument("--recipe-svh", type=Path, default=here / "rtl" / "ucode_recipes.svh")
+    ap.add_argument("--recipe-manifest", type=Path, default=here / "src" / "ucode_recipes.md")
     ap.add_argument("--check", action="store_true",
                     help="fail if generated microcode or recipe files are stale")
     args = ap.parse_args()

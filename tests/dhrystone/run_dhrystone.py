@@ -238,6 +238,23 @@ def rtl_sources(core: str, core_dir: Path) -> list[Path]:
     return sources
 
 
+def core_layout(core_dir: Path) -> tuple[Path, Path]:
+    """Find the RTL and ROM directories for split and legacy flat cores."""
+    rtl_dir = core_dir / "rtl"
+    if not rtl_dir.is_dir():
+        return core_dir, core_dir
+
+    src_dir = core_dir / "src"
+    if not src_dir.is_dir():
+        raise FileNotFoundError(f"missing ROM source directory: {src_dir}")
+    required_roms = ("ucode.hex", "pla_entry_rom.hex", "pla_group_entry.hex")
+    missing = [str(src_dir / name) for name in required_roms
+               if not (src_dir / name).is_file()]
+    if missing:
+        raise FileNotFoundError("missing ROM image(s): " + ", ".join(missing))
+    return rtl_dir, src_dir
+
+
 def copy_ucode_files(core_dir: Path, build_dir: Path) -> None:
     # Copy whichever ROM images the core revision provides (older cores use
     # the expanded ucode45.hex; current cores predecode in hardware).
@@ -255,10 +272,11 @@ def build_core(
     verbose: bool = False,
 ) -> Path:
     core_dir = core_dir.resolve()
+    rtl_dir, src_dir = core_layout(core_dir)
     core_build_dir = BUILD_DIR / label
     exe = core_build_dir / "obj_dir/Vtb_dhrystone"
     if exe.exists() and not rebuild:
-        copy_ucode_files(core_dir, core_build_dir)
+        copy_ucode_files(src_dir, core_build_dir)
         return exe
 
     if rebuild:
@@ -267,7 +285,7 @@ def build_core(
         # a forced comparison rebuild fail before the simulation starts.
         shutil.rmtree(core_build_dir / "obj_dir", ignore_errors=True)
     core_build_dir.mkdir(parents=True, exist_ok=True)
-    copy_ucode_files(core_dir, core_build_dir)
+    copy_ucode_files(src_dir, core_build_dir)
 
     cmd = [
         "verilator",
@@ -282,7 +300,7 @@ def build_core(
         "--build",
         "-j",
         "0",
-        f"-I{core_dir}",
+        f"-I{rtl_dir}",
         f"-I{THIS_DIR.parent}",
         "-CFLAGS",
         "-std=c++14 -O3",
@@ -291,17 +309,17 @@ def build_core(
         "--top-module",
         "tb_dhrystone",
     ]
-    if (core_dir / "x87").is_dir():
-        cmd.insert(cmd.index("-CFLAGS"), f"-I{core_dir / 'x87'}")
-    elif (core_dir / "x87_v1").is_dir():
-        cmd.insert(cmd.index("-CFLAGS"), f"-I{core_dir / 'x87_v1'}")
+    if (rtl_dir / "x87").is_dir():
+        cmd.insert(cmd.index("-CFLAGS"), f"-I{rtl_dir / 'x87'}")
+    elif (rtl_dir / "x87_v1").is_dir():
+        cmd.insert(cmd.index("-CFLAGS"), f"-I{rtl_dir / 'x87_v1'}")
 
     sources = [
         THIS_DIR / "tb_dhrystone.sv",
-        *rtl_sources(label, core_dir),
+        *rtl_sources(label, rtl_dir),
         THIS_DIR / "sim_main_dhrystone.cpp",
     ]
-    if (core_dir / "l1_cache.sv").exists():
+    if (rtl_dir / "l1_cache.sv").exists():
         cache_define = (
             "+define+Z486_INTERNAL_CACHE"
             if label == "z486_current"

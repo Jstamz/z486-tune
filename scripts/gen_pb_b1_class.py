@@ -12,7 +12,7 @@ opcode, ModR/M.reg and whether ModR/M names memory; never on the operand size
 or PE.  This script proves that by evaluating every case with the decoder's
 own lookups and the recipe functions (a Verilator testbench that includes
 pla_control.svh, pla_entry.svh, z486_pkg.sv and both ROM hex files), then
-writes the table as a casez function in ../pb_b1_class.svh.  A simulation
+writes the table as a casez function in ../rtl/pb_b1_class.svh.  A simulation
 check in hardwired_control compares it with the recipe table at every load.
 
 Rerun after changing the entry PLA, the group ROM or ucode_recipes.svh:
@@ -31,7 +31,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 CORE = HERE.parent
-OUT = CORE / "pb_b1_class.svh"
+RTL = CORE / "rtl"
+SRC = CORE / "src"
+OUT = RTL / "pb_b1_class.svh"
 
 TB = r"""
 module tb_pb_b1_class;
@@ -111,10 +113,10 @@ endmodule
 def evaluate(work: Path) -> list[str]:
     (work / "tb.sv").write_text(TB)
     for name in ("pla_entry_base.hex", "pla_group_base.hex"):
-        shutil.copy(CORE / name, work / name)
+        shutil.copy(SRC / name, work / name)
     subprocess.run(
         ["verilator", "--binary", "-Wno-fatal", "-Wno-lint", "-Wno-style",
-         f"-I{CORE}", str(CORE / "z486_pkg.sv"), "tb.sv",
+         f"-I{RTL}", str(RTL / "z486_pkg.sv"), "tb.sv",
          "--top-module", "tb_pb_b1_class", "-o", "tb"],
         cwd=work, check=True, stdout=subprocess.DEVNULL)
     subprocess.run(["./obj_dir/tb"], cwd=work, check=True,

@@ -101,6 +101,18 @@ Additional targets cover Dhrystone, Berkeley TestFloat, the broader
 `test386.py` suite, and external real- and protected-mode single-step reference
 datasets. Run `make help` in `tests` for the current target list.
 
+## Source layout
+
+Core RTL and include files live in `rtl/`, ROM data in `src/`, and
+generation scripts in `scripts/`. The x87 files follow the same layout under
+`rtl/x87/`, `src/x87/`, and `scripts/x87/`.
+
+`scripts/x87/build_x87_microcode.py` is the source of truth for the x87
+control store. It generates the Quartus MIF, the simulation SVH, symbolic
+entry addresses, and a review listing; do not edit those generated files by
+hand. The older operation-specific implementation remains under
+`tests/x87_reference/` only for differential testing.
+
 ## Related projects
 
 The [z386](https://github.com/nand2mario/z386) repository contains the

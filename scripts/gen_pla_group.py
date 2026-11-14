@@ -15,10 +15,10 @@ generated valid bit distinguishes it from non-group entries.
 The generated function is written into pla_entry.svh between the
 "begin/end generated: pla_group_lookup" markers (appended on first run),
 since it is derived data of the entry PLA.  Inputs are parsed from
-pla_entry.svh and pla_control.svh in the directory above this script.
+pla_entry.svh and pla_control.svh in ../rtl relative to this script.
 Run from anywhere:
 
-    ./gen_pla_group.py            # also writes ../pla_group_base.hex
+    ./gen_pla_group.py            # also writes ../src/pla_group_base.hex
 """
 
 from __future__ import annotations
@@ -29,6 +29,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 CORE = HERE.parent
+RTL = CORE / "rtl"
+SRC = CORE / "src"
 
 
 def parse_casez(path: Path, func_name: str, width: int):
@@ -104,10 +106,10 @@ def build_group_entry_rom(group_map, group_entry_pats, row_source):
 # first matching row wins); the 386 rows themselves are never edited.
 # Address fields: first-level rows {data32, opcode[7:0], rep, pe, 1, has_0f};
 # group rows {data32, group[5:4], modrm.reg, group[3:0], memory, 0, has_0f}.
-# After a change: run this script (group rows and pla_group_base.hex), rebuild
-# pla_entry_base.hex (verilator --binary -I.. gen_pla_entry_rom.sv --top-module
-# gen_pla_entry_rom, run it in 24.z486), then gen_recipe_rom.py and
-# gen_pb_b1_class.py.
+# After a change, run this script, then build gen_pla_entry_rom from scripts/:
+# verilator --binary -Wno-fatal -I../rtl gen_pla_entry_rom.sv --top-module gen_pla_entry_rom
+# Run ../scripts/obj_dir/Vgen_pla_entry_rom from src/, then run
+# gen_recipe_rom.py and gen_pb_b1_class.py.
 UADDR_UD = 0x082B                     # #UD: FAULT 6
 UADDR_MOV_TR_R = 0x0391               # MOV TRn,rd
 UADDR_MOV_R_TR = 0x03B6               # MOV rd,TRn
@@ -145,9 +147,9 @@ def apply_entry_patches(path: Path) -> None:
 
 
 def main():
-    apply_entry_patches(CORE / "pla_entry.svh")
-    entry_pats = parse_casez(CORE / "pla_entry.svh", "pla_entry_lookup", 13)
-    ctl_pats = parse_casez(CORE / "pla_control.svh",
+    apply_entry_patches(RTL / "pla_entry.svh")
+    entry_pats = parse_casez(RTL / "pla_entry.svh", "pla_entry_lookup", 13)
+    ctl_pats = parse_casez(RTL / "pla_control.svh",
                            "pla_control_opcode_lookup", 9)
 
     # group_map[(has_0f, opcode)] -> {(data32, pe): row}
@@ -256,7 +258,7 @@ def main():
     body.append("endfunction")
     body.append("// ---- end generated: pla_group_lookup ----")
 
-    out = CORE / "pla_entry.svh"
+    out = RTL / "pla_entry.svh"
     text = out.read_text()
     begin_mark = "// Generated second-level group PLA"
     end_mark = "// ---- end generated: pla_group_lookup ----"
@@ -282,7 +284,7 @@ def main():
         assert casez_eval(group_entry_pats, register_addr, 13) == 0x082B
     group_entry_rom, group_entry_valid = build_group_entry_rom(
         group_map, group_entry_pats, row_source)
-    rom_out = CORE / "pla_group_base.hex"
+    rom_out = SRC / "pla_group_base.hex"
     rom_out.write_text("".join(f"{entry:04x}\n" for entry in group_entry_rom))
     assert sum(group_entry_valid) == 944 + 16 * len(row_source)
     checked = mismatches = 0

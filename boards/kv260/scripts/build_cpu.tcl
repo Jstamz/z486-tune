@@ -13,10 +13,10 @@ set build_dir [file join $board_dir "build-cpu${suffix}"]
 set period_ns [expr {1000.0 / double($cpu_mhz)}]
 file mkdir $build_dir
 foreach image [list \
-        [file join $cpu_dir ucode.hex] \
-        [file join $cpu_dir pla_entry_rom.hex] \
-        [file join $cpu_dir pla_group_entry.hex] \
-        [file join $cpu_dir x87 x87_ucode.mem]] {
+        [file join $cpu_dir src ucode.hex] \
+        [file join $cpu_dir src pla_entry_rom.hex] \
+        [file join $cpu_dir src pla_group_entry.hex] \
+        [file join $cpu_dir src x87 x87_ucode.mem]] {
     file copy -force $image [file join $build_dir [file tail $image]]
 }
 
@@ -51,7 +51,7 @@ read_xdc $constraints_file
 # top and incorrectly require 268 physical I/O pins.
 cd $build_dir
 synth_design -top z486 -part xck26-sfvc784-2LV-c -mode out_of_context \
-    -include_dirs [list $cpu_dir [file join $cpu_dir x87]] \
+    -include_dirs [list [file join $cpu_dir rtl] [file join $cpu_dir rtl x87]] \
     -define Z486_XILINX=1 -generic "ENABLE_X87=$enable_x87" \
     -generic "CLOCK_RATE_MHZ=$cpu_mhz"
 write_checkpoint -force [file join $build_dir z486_cpu_synth.dcp]

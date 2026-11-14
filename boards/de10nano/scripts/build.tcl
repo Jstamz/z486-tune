@@ -31,8 +31,8 @@ if {!$fmax_build} {
     set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
 }
 set_global_assignment -name VERILOG_MACRO "Z486_ALTERA=1"
-set_global_assignment -name SEARCH_PATH $cpu_dir
-set_global_assignment -name SEARCH_PATH [file join $cpu_dir x87]
+set_global_assignment -name SEARCH_PATH [file join $cpu_dir rtl]
+set_global_assignment -name SEARCH_PATH [file join $cpu_dir rtl x87]
 set_parameter -name CPU_MHZ $cpu_mhz
 
 set manifest [file join $cpu_dir boards common rtl_sources.f]
@@ -54,18 +54,18 @@ set_global_assignment -name SDC_FILE \
     [file join $board_dir constraints de10nano.sdc]
 
 foreach image [list \
-        [file join $cpu_dir pla_entry_rom.hex] \
-        [file join $cpu_dir pla_group_entry.hex] \
+        [file join $cpu_dir src pla_entry_rom.hex] \
+        [file join $cpu_dir src pla_group_entry.hex] \
         [file join $cpu_dir boards firmware blink.hex]] {
     file copy -force $image [file join $build_dir [file tail $image]]
     set_global_assignment -name HEX_FILE $image
 }
 
 foreach image [list \
-        [file join $cpu_dir ucode.mif] \
-        [file join $cpu_dir x87 x87_ucode.mif] \
-        [file join $cpu_dir x87 x87_command_decode.mif] \
-        [file join $cpu_dir x87 x87_logexp_tables.mif]] {
+        [file join $cpu_dir src ucode.mif] \
+        [file join $cpu_dir src x87 x87_ucode.mif] \
+        [file join $cpu_dir src x87 x87_command_decode.mif] \
+        [file join $cpu_dir src x87 x87_logexp_tables.mif]] {
     file copy -force $image [file join $build_dir [file tail $image]]
     set_global_assignment -name MIF_FILE $image
 }

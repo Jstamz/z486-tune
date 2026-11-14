@@ -26,8 +26,8 @@ A simulation check in decoder.sv compares the result with the specification
 for every instruction leaving D2.  Rerun after changing the entry PLA, the
 group ROM (gen_pla_group.py) or the recipe inventory (ucode_optimize.py):
 
-    ./gen_recipe_rom.py            # writes ../pla_entry_rom.hex,
-                                   # ../pla_group_entry.hex, ../recipe_rom.svh
+    ./gen_recipe_rom.py            # writes ../src/pla_entry_rom.hex,
+                                   # ../src/pla_group_entry.hex, ../rtl/recipe_rom.svh
     ./gen_recipe_rom.py --check    # fail if they are stale
 """
 
@@ -43,11 +43,13 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 CORE = HERE.parent
-ENTRY_BASE = CORE / "pla_entry_base.hex"
-GROUP_BASE = CORE / "pla_group_base.hex"
-ENTRY_ROM = CORE / "pla_entry_rom.hex"
-GROUP_ROM = CORE / "pla_group_entry.hex"
-SVH = CORE / "recipe_rom.svh"
+RTL = CORE / "rtl"
+SRC = CORE / "src"
+ENTRY_BASE = SRC / "pla_entry_base.hex"
+GROUP_BASE = SRC / "pla_group_base.hex"
+ENTRY_ROM = SRC / "pla_entry_rom.hex"
+GROUP_ROM = SRC / "pla_group_entry.hex"
+SVH = RTL / "recipe_rom.svh"
 
 ID_BITS = 6
 SLOT_BITS = 16 + ID_BITS          # {recipe ID, 80386 PLA bits 15:12, entry}
@@ -162,7 +164,7 @@ def evaluate(work: Path) -> list[str]:
         shutil.copy(path, work / path.name)
     subprocess.run(
         ["verilator", "--binary", "-Wno-fatal", "-Wno-lint", "-Wno-style",
-         f"-I{work}", f"-I{CORE}", str(CORE / "z486_pkg.sv"), "tb.sv",
+         f"-I{work}", f"-I{RTL}", str(RTL / "z486_pkg.sv"), "tb.sv",
          "--top-module", "tb_recipe_rom", "-o", "tb"],
         cwd=work, check=True, stdout=subprocess.DEVNULL)
     subprocess.run(["./obj_dir/tb"], cwd=work, check=True,
