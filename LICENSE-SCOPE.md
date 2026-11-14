@@ -7,4 +7,4 @@ in this repository with the following extensions:
 - Python source: `*.py`
 - Documentation: `*.md`
 
-`ucode.hex` is excluded from the Apache License 2.0 grant.
+`src/ucode.hex` is excluded from the Apache License 2.0 grant.

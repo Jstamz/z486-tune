@@ -28,8 +28,8 @@ set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 apply_z486_production_settings
 set_global_assignment -name VERILOG_MACRO "Z486_ALTERA=1"
-set_global_assignment -name SEARCH_PATH $cpu_dir
-set_global_assignment -name SEARCH_PATH [file join $cpu_dir x87]
+set_global_assignment -name SEARCH_PATH [file join $cpu_dir rtl]
+set_global_assignment -name SEARCH_PATH [file join $cpu_dir rtl x87]
 set_parameter -name ENABLE_X87 $enable_x87
 set_parameter -name CLOCK_RATE_MHZ $cpu_mhz
 
@@ -48,17 +48,17 @@ while {[gets $manifest_file line] >= 0} {
 close $manifest_file
 
 foreach image [list \
-        [file join $cpu_dir pla_entry_rom.hex] \
-        [file join $cpu_dir pla_group_entry.hex]] {
+        [file join $cpu_dir src pla_entry_rom.hex] \
+        [file join $cpu_dir src pla_group_entry.hex]] {
     file copy -force $image [file join $build_dir [file tail $image]]
     set_global_assignment -name HEX_FILE $image
 }
 
 foreach image [list \
-        [file join $cpu_dir ucode.mif] \
-        [file join $cpu_dir x87 x87_ucode.mif] \
-        [file join $cpu_dir x87 x87_command_decode.mif] \
-        [file join $cpu_dir x87 x87_logexp_tables.mif]] {
+        [file join $cpu_dir src ucode.mif] \
+        [file join $cpu_dir src x87 x87_ucode.mif] \
+        [file join $cpu_dir src x87 x87_command_decode.mif] \
+        [file join $cpu_dir src x87 x87_logexp_tables.mif]] {
     file copy -force $image [file join $build_dir [file tail $image]]
     set_global_assignment -name MIF_FILE $image
 }

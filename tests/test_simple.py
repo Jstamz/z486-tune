@@ -81,17 +81,17 @@ def build_if_needed():
 
     # Source files to check (matching Makefile)
     source_files = [
-        ROOT / 'z486_pkg.sv',
-        ROOT / 'z486.sv',
-        ROOT / 'decoder.sv',
-        ROOT / 'alu.sv',
-        ROOT / 'segmentation.sv',
+        ROOT / 'rtl' / 'z486_pkg.sv',
+        ROOT / 'rtl' / 'z486.sv',
+        ROOT / 'rtl' / 'decoder.sv',
+        ROOT / 'rtl' / 'alu.sv',
+        ROOT / 'rtl' / 'segmentation_unit.sv',
         TESTS / 'tb_z486.sv',
         TESTS / 'sim_main.cpp',
         # Include header files
-        ROOT / 'pla_entry.svh',
-        ROOT / 'pla_control.svh',
-        ROOT / 'ucode_recipes.svh',
+        ROOT / 'rtl' / 'pla_entry.svh',
+        ROOT / 'rtl' / 'pla_control.svh',
+        ROOT / 'rtl' / 'ucode_recipes.svh',
     ]
 
     if not TB.exists():

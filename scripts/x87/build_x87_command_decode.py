@@ -239,7 +239,7 @@ def pack(fop: int) -> int:
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parents[2]
     words = [pack(fop) for fop in range(2048)]
     assert all(word < (1 << 23) for word in words)
     # Register-form ESC instructions must never open a memory-transfer stream.
@@ -260,7 +260,7 @@ def main() -> None:
         for address, word in enumerate(words) if word
     )
     svh.extend(("        default: return 23'h000000;", "    endcase", "endfunction"))
-    (root / "x87_command_decode.svh").write_text("\n".join(svh) + "\n")
+    (root / "rtl" / "x87" / "x87_command_decode.svh").write_text("\n".join(svh) + "\n")
 
     mif = [
         "WIDTH=23;", "DEPTH=2048;", "ADDRESS_RADIX=HEX;", "DATA_RADIX=HEX;",
@@ -268,7 +268,7 @@ def main() -> None:
     ]
     mif.extend(f"    {address:03X} : {word:06X};" for address, word in enumerate(words))
     mif.append("END;")
-    (root / "x87_command_decode.mif").write_text("\n".join(mif) + "\n")
+    (root / "src" / "x87" / "x87_command_decode.mif").write_text("\n".join(mif) + "\n")
 
 
 if __name__ == "__main__":

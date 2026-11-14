@@ -9,7 +9,7 @@ create_project $project_name $build_dir -force -part xck26-sfvc784-2LV-c
 set_property board_part xilinx.com:kv260_som:part0:1.4 [current_project]
 set_property target_language Verilog [current_project]
 set_property simulator_language Mixed [current_project]
-set_property include_dirs [list $cpu_dir [file join $cpu_dir x87]] \
+set_property include_dirs [list [file join $cpu_dir rtl] [file join $cpu_dir rtl x87]] \
     [get_filesets sources_1]
 set_property verilog_define {Z486_XILINX=1} [get_filesets sources_1]
 
@@ -29,10 +29,10 @@ add_files -fileset constrs_1 -norecurse \
     [file join $board_dir constraints kv260.xdc]
 
 foreach image [list \
-        [file join $cpu_dir ucode.hex] \
-        [file join $cpu_dir pla_entry_rom.hex] \
-        [file join $cpu_dir pla_group_entry.hex] \
-        [file join $cpu_dir x87 x87_ucode.mem] \
+        [file join $cpu_dir src ucode.hex] \
+        [file join $cpu_dir src pla_entry_rom.hex] \
+        [file join $cpu_dir src pla_group_entry.hex] \
+        [file join $cpu_dir src x87 x87_ucode.mem] \
         [file join $cpu_dir boards firmware blink.hex]] {
     add_files -norecurse $image
     set_property file_type {Memory Initialization Files} [get_files $image]

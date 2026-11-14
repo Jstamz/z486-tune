@@ -571,13 +571,15 @@ def write_entries(path: Path, labels: dict[str, int]) -> None:
 
 
 def main() -> None:
-    out_dir = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parents[2]
+    rtl_dir = root / "rtl" / "x87"
+    src_dir = root / "src" / "x87"
     words, labels, listing = assemble()
-    write_mif(out_dir / "x87_ucode.mif", words)
-    write_mem(out_dir / "x87_ucode.mem", words)
-    write_svh(out_dir / "x87_ucode.svh", words)
-    write_entries(out_dir / "x87_entries.svh", labels)
-    (out_dir / "x87_ucode.lst").write_text("\n".join(listing) + "\n")
+    write_mif(src_dir / "x87_ucode.mif", words)
+    write_mem(src_dir / "x87_ucode.mem", words)
+    write_svh(rtl_dir / "x87_ucode.svh", words)
+    write_entries(rtl_dir / "x87_entries.svh", labels)
+    (src_dir / "x87_ucode.lst").write_text("\n".join(listing) + "\n")
     print(f"wrote {len(PROGRAM)} x87 microinstructions")
 
 

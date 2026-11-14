@@ -4,22 +4,27 @@
 
 # Paths
 Z486_DIR := ..
+RTL_DIR := $(Z486_DIR)/rtl
+SRC_DIR := $(Z486_DIR)/src
+SCRIPTS_DIR := $(Z486_DIR)/scripts
 VERILATOR := verilator
 
 # Source files
 # Note: muldiv.sv and bus_prefetch.sv are standalone modules that can optionally
 # replace the inline mul/div and bus/prefetch code in z486.sv.
 # Currently z486.sv uses inline code; uncomment modules below when integrating.
-X87_DIR := $(Z486_DIR)/x87
+X87_DIR := $(RTL_DIR)/x87
+X87_SRC_DIR := $(SRC_DIR)/x87
+X87_SCRIPT_DIR := $(SCRIPTS_DIR)/x87
 X87_REF_DIR := x87_reference
 X87_UCODE_GEN := $(X87_DIR)/x87_ucode.svh \
-			$(X87_DIR)/x87_ucode.mif \
-			$(X87_DIR)/x87_ucode.mem \
+			$(X87_SRC_DIR)/x87_ucode.mif \
+			$(X87_SRC_DIR)/x87_ucode.mem \
 			$(X87_DIR)/x87_entries.svh
 X87_COMMAND_GEN := $(X87_DIR)/x87_command_decode.svh \
-			$(X87_DIR)/x87_command_decode.mif
+			$(X87_SRC_DIR)/x87_command_decode.mif
 X87_LOGEXP_GEN := $(X87_DIR)/x87_logexp_tables.svh \
-			$(X87_DIR)/x87_logexp_tables.mif
+			$(X87_SRC_DIR)/x87_logexp_tables.mif
 X87_POLY_GEN := $(X87_DIR)/x87_poly_rom.svh
 X87_GEN := $(X87_UCODE_GEN) $(X87_COMMAND_GEN) $(X87_LOGEXP_GEN) $(X87_POLY_GEN)
 X87_RTL := $(X87_DIR)/x87_pkg.sv \
@@ -34,22 +39,22 @@ X87_RTL := $(X87_DIR)/x87_pkg.sv \
 			$(X87_DIR)/x87_control.sv \
 			$(X87_DIR)/x87_unit.sv
 
-RTL_SRCS := $(Z486_DIR)/z486_pkg.sv $(X87_DIR)/x87_pkg.sv \
-			$(X87_DIR)/x87_ucode_pkg.sv $(Z486_DIR)/z486.sv \
-			$(Z486_DIR)/cpu_throttle.sv $(Z486_DIR)/interrupt_controller.sv \
-			$(Z486_DIR)/ucode_rom.sv $(Z486_DIR)/microsequencer.sv $(Z486_DIR)/event_control.sv $(Z486_DIR)/hardwired_control.sv $(Z486_DIR)/data_access.sv \
-			$(Z486_DIR)/data_unit.sv $(Z486_DIR)/address_unit.sv \
-			$(Z486_DIR)/shifter.sv $(Z486_DIR)/mul_div.sv \
-			$(Z486_DIR)/decoder.sv \
-			$(Z486_DIR)/alu.sv $(Z486_DIR)/prefetch.sv \
-			$(Z486_DIR)/paging_unit.sv $(Z486_DIR)/paging_tlb.sv $(Z486_DIR)/paging_walker.sv \
-			$(Z486_DIR)/memory.sv $(Z486_DIR)/bus_unit.sv $(Z486_DIR)/cache_unit.sv $(Z486_DIR)/l1_cache.sv $(Z486_DIR)/l1_icache.sv \
+RTL_SRCS := $(RTL_DIR)/z486_pkg.sv $(X87_DIR)/x87_pkg.sv \
+			$(X87_DIR)/x87_ucode_pkg.sv $(RTL_DIR)/z486.sv \
+			$(RTL_DIR)/cpu_throttle.sv $(RTL_DIR)/interrupt_controller.sv \
+			$(RTL_DIR)/ucode_rom.sv $(RTL_DIR)/microsequencer.sv $(RTL_DIR)/event_control.sv $(RTL_DIR)/hardwired_control.sv $(RTL_DIR)/data_access.sv \
+			$(RTL_DIR)/data_unit.sv $(RTL_DIR)/address_unit.sv \
+			$(RTL_DIR)/shifter.sv $(RTL_DIR)/mul_div.sv \
+			$(RTL_DIR)/decoder.sv \
+			$(RTL_DIR)/alu.sv $(RTL_DIR)/prefetch.sv \
+			$(RTL_DIR)/paging_unit.sv $(RTL_DIR)/paging_tlb.sv $(RTL_DIR)/paging_walker.sv \
+			$(RTL_DIR)/memory.sv $(RTL_DIR)/bus_unit.sv $(RTL_DIR)/cache_unit.sv $(RTL_DIR)/l1_cache.sv $(RTL_DIR)/l1_icache.sv \
 			$(filter-out $(X87_DIR)/x87_pkg.sv $(X87_DIR)/x87_ucode_pkg.sv,$(X87_RTL)) \
-			$(Z486_DIR)/dsp_mul.sv $(Z486_DIR)/protection.sv $(Z486_DIR)/segmentation_unit.sv
-RTL_DEPS := $(Z486_DIR)/ucode_recipes.svh $(Z486_DIR)/pb_b1_class.svh $(X87_GEN) \
+			$(RTL_DIR)/dsp_mul.sv $(RTL_DIR)/protection.sv $(RTL_DIR)/segmentation_unit.sv
+RTL_DEPS := $(RTL_DIR)/ucode_recipes.svh $(RTL_DIR)/pb_b1_class.svh $(X87_GEN) \
 			$(X87_DIR)/x87_logexp_rom.sv
 # Optional modules (not yet integrated):
-# RTL_SRCS += $(Z486_DIR)/muldiv.sv $(Z486_DIR)/bus_prefetch.sv
+# RTL_SRCS += $(RTL_DIR)/muldiv.sv $(RTL_DIR)/bus_prefetch.sv
 TB_SRCS := tb_z486.sv
 CPP_SRCS := sim_main.cpp
 
@@ -109,7 +114,7 @@ CPP_X87_FIFO_SRCS := sim_main_x87_transfer_fifo.cpp
 # PLA4 verification testbench sources
 TB_PLA4_SRCS := tb_protection_pla4.sv
 CPP_PLA4_SRCS := sim_main_pla4.cpp
-PLA4_RTL := $(Z486_DIR)/protection.sv
+PLA4_RTL := $(RTL_DIR)/protection.sv
 
 # Targets
 .PHONY: all build test-simple test-full test-386 test-186 test-protected test-pla4 test-l1-cache test-l1-icache test-memory-order test-x87-bridge test-x87-sequencer test-x87-executor test-x87-testfloat test-x87-fifo test-x87-core test-x87-integration test-x87-integer dhrystone clean help
@@ -121,26 +126,26 @@ build: obj_dir/Vtb_z486 obj_dir/Vtb_protected_mode
 
 obj_dir/Vtb_z486: $(RTL_SRCS) $(RTL_DEPS) $(TB_SRCS) $(CPP_SRCS)
 	@echo "Building z486 testbench with Verilator..."
-	cp -f ../*.hex .
+	cp -f $(SRC_DIR)/*.hex .
 	$(VERILATOR) $(VFLAGS) --top-module tb_z486 $(TB_SRCS) $(RTL_SRCS) $(CPP_SRCS)
 	@echo "Build complete: obj_dir/Vtb_z486"
 
 obj_dir/Vtb_protected_mode: $(RTL_SRCS) $(RTL_DEPS) $(TB_PROT_SRCS) $(TB_PROT_DEPS) $(CPP_PROT_SRCS)
 	@echo "Building protected mode testbench with Verilator..."
-	cp -f ../*.hex .
+	cp -f $(SRC_DIR)/*.hex .
 	$(VERILATOR) $(VFLAGS) --top-module tb_protected_mode $(TB_PROT_SRCS) $(RTL_SRCS) $(CPP_PROT_SRCS)
 	@echo "Build complete: obj_dir/Vtb_protected_mode"
 
 obj_dir_x87/Vtb_protected_mode: $(RTL_SRCS) $(RTL_DEPS) $(TB_PROT_SRCS) $(TB_PROT_DEPS) $(CPP_PROT_SRCS)
 	@echo "Building x87-enabled protected mode testbench with Verilator..."
-	cp -f ../*.hex .
+	cp -f $(SRC_DIR)/*.hex .
 	$(VERILATOR) $(VFLAGS) --Mdir obj_dir_x87 -GENABLE_X87=1 --top-module tb_protected_mode \
 		$(TB_PROT_SRCS) $(RTL_SRCS) $(CPP_PROT_SRCS)
 	@echo "Build complete: obj_dir_x87/Vtb_protected_mode"
 
 obj_dir_quake/Vtb_protected_mode: $(RTL_SRCS) $(RTL_DEPS) $(TB_PROT_SRCS) $(TB_PROT_DEPS) $(CPP_QUAKE_SNAPSHOT_SRCS)
 	@echo "Building 64MB workload snapshot replay..."
-	cp -f ../*.hex .
+	cp -f $(SRC_DIR)/*.hex .
 	$(VERILATOR) $(VFLAGS_NOTRACE) --Mdir obj_dir_quake \
 		-GENABLE_X87=1 -GMEM_SIZE=67108864 --top-module tb_protected_mode \
 		$(TB_PROT_SRCS) $(RTL_SRCS) $(CPP_QUAKE_SNAPSHOT_SRCS)
@@ -148,7 +153,7 @@ obj_dir_quake/Vtb_protected_mode: $(RTL_SRCS) $(RTL_DEPS) $(TB_PROT_SRCS) $(TB_P
 
 obj_dir_quake_trace/Vtb_protected_mode: $(RTL_SRCS) $(RTL_DEPS) $(TB_PROT_SRCS) $(TB_PROT_DEPS) $(CPP_QUAKE_SNAPSHOT_SRCS)
 	@echo "Building trace-enabled 64MB workload snapshot replay..."
-	cp -f ../*.hex .
+	cp -f $(SRC_DIR)/*.hex .
 	$(VERILATOR) $(VFLAGS_FST) --Mdir obj_dir_quake_trace \
 		-GENABLE_X87=1 -GMEM_SIZE=67108864 --top-module tb_protected_mode \
 		$(TB_PROT_SRCS) $(RTL_SRCS) $(CPP_QUAKE_SNAPSHOT_SRCS)
@@ -162,31 +167,31 @@ obj_dir_quake_shared/Vtb_protected_mode: $(RTL_SRCS) $(RTL_DEPS) $(TB_PROT_SRCS)
 
 obj_dir_x87_int/Vtb_z486: $(RTL_SRCS) $(RTL_DEPS) $(TB_SRCS) $(CPP_SRCS)
 	@echo "Building x87-enabled integer testbench with Verilator..."
-	cp -f ../*.hex .
+	cp -f $(SRC_DIR)/*.hex .
 	$(VERILATOR) $(VFLAGS) --Mdir obj_dir_x87_int -GENABLE_X87=1 --top-module tb_z486 \
 		$(TB_SRCS) $(RTL_SRCS) $(CPP_SRCS)
 	@echo "Build complete: obj_dir_x87_int/Vtb_z486"
 
 obj_dir/Vtb_test386: $(RTL_SRCS) $(RTL_DEPS) $(TB386_SRCS) $(CPP386_SRCS)
 	@echo "Building test386 testbench with Verilator..."
-	cp -f ../*.hex .
+	cp -f $(SRC_DIR)/*.hex .
 	$(VERILATOR) $(VFLAGS_FST) --top-module tb_test386 $(TB386_SRCS) $(RTL_SRCS) $(CPP386_SRCS)
 	@echo "Build complete: obj_dir/Vtb_test386"
 
-obj_dir/Vtb_l1_cache: $(Z486_DIR)/l1_cache.sv $(TB_L1_SRCS) $(CPP_L1_SRCS)
+obj_dir/Vtb_l1_cache: $(RTL_DIR)/l1_cache.sv $(TB_L1_SRCS) $(CPP_L1_SRCS)
 	@echo "Building L1 cache unit test with Verilator..."
-	$(VERILATOR) $(VFLAGS_NOTRACE) --top-module tb_l1_cache $(TB_L1_SRCS) $(Z486_DIR)/l1_cache.sv $(CPP_L1_SRCS)
+	$(VERILATOR) $(VFLAGS_NOTRACE) --top-module tb_l1_cache $(TB_L1_SRCS) $(RTL_DIR)/l1_cache.sv $(CPP_L1_SRCS)
 	@echo "Build complete: obj_dir/Vtb_l1_cache"
 
-obj_dir/Vtb_l1_icache: $(Z486_DIR)/l1_icache.sv $(TB_L1I_SRCS) $(CPP_L1I_SRCS)
+obj_dir/Vtb_l1_icache: $(RTL_DIR)/l1_icache.sv $(TB_L1I_SRCS) $(CPP_L1I_SRCS)
 	@echo "Building L1 instruction cache unit test with Verilator..."
-	$(VERILATOR) $(VFLAGS_NOTRACE) --top-module tb_l1_icache $(TB_L1I_SRCS) $(Z486_DIR)/l1_icache.sv $(CPP_L1I_SRCS)
+	$(VERILATOR) $(VFLAGS_NOTRACE) --top-module tb_l1_icache $(TB_L1I_SRCS) $(RTL_DIR)/l1_icache.sv $(CPP_L1I_SRCS)
 	@echo "Build complete: obj_dir/Vtb_l1_icache"
 
-obj_dir/Vtb_memory_order: $(Z486_DIR)/memory.sv $(Z486_DIR)/bus_unit.sv $(Z486_DIR)/cache_unit.sv $(Z486_DIR)/l1_cache.sv $(Z486_DIR)/l1_icache.sv $(TB_MEMORY_ORDER_SRCS) $(CPP_MEMORY_ORDER_SRCS)
+obj_dir/Vtb_memory_order: $(RTL_DIR)/memory.sv $(RTL_DIR)/bus_unit.sv $(RTL_DIR)/cache_unit.sv $(RTL_DIR)/l1_cache.sv $(RTL_DIR)/l1_icache.sv $(TB_MEMORY_ORDER_SRCS) $(CPP_MEMORY_ORDER_SRCS)
 	@echo "Building memory ordering unit test with Verilator..."
 	$(VERILATOR) $(VFLAGS_NOTRACE) --top-module tb_memory_order $(TB_MEMORY_ORDER_SRCS) \
-		$(Z486_DIR)/memory.sv $(Z486_DIR)/bus_unit.sv $(Z486_DIR)/cache_unit.sv $(Z486_DIR)/l1_cache.sv $(Z486_DIR)/l1_icache.sv $(CPP_MEMORY_ORDER_SRCS)
+		$(RTL_DIR)/memory.sv $(RTL_DIR)/bus_unit.sv $(RTL_DIR)/cache_unit.sv $(RTL_DIR)/l1_cache.sv $(RTL_DIR)/l1_icache.sv $(CPP_MEMORY_ORDER_SRCS)
 	@echo "Build complete: obj_dir/Vtb_memory_order"
 
 obj_dir/Vtb_x87_bridge: $(X87_DIR)/x87_bridge.sv $(TB_X87_BRIDGE_SRCS) $(CPP_X87_BRIDGE_SRCS)
@@ -194,14 +199,14 @@ obj_dir/Vtb_x87_bridge: $(X87_DIR)/x87_bridge.sv $(TB_X87_BRIDGE_SRCS) $(CPP_X87
 	$(VERILATOR) $(VFLAGS_NOTRACE) --top-module tb_x87_bridge $(TB_X87_BRIDGE_SRCS) $(X87_DIR)/x87_bridge.sv $(CPP_X87_BRIDGE_SRCS)
 	@echo "Build complete: obj_dir/Vtb_x87_bridge"
 
-$(X87_UCODE_GEN): $(X87_DIR)/build_x87_microcode.py
-	cd $(X87_DIR) && ./build_x87_microcode.py
+$(X87_UCODE_GEN): $(X87_SCRIPT_DIR)/build_x87_microcode.py
+	cd $(X87_SCRIPT_DIR) && ./build_x87_microcode.py
 
-$(X87_COMMAND_GEN): $(X87_DIR)/build_x87_command_decode.py
-	cd $(X87_DIR) && ./build_x87_command_decode.py
+$(X87_COMMAND_GEN): $(X87_SCRIPT_DIR)/build_x87_command_decode.py
+	cd $(X87_SCRIPT_DIR) && ./build_x87_command_decode.py
 
-$(X87_LOGEXP_GEN): $(X87_DIR)/build_x87_logexp_tables.py
-	cd $(X87_DIR) && ./build_x87_logexp_tables.py
+$(X87_LOGEXP_GEN): $(X87_SCRIPT_DIR)/build_x87_logexp_tables.py
+	cd $(X87_SCRIPT_DIR) && ./build_x87_logexp_tables.py
 
 obj_dir/Vtb_x87_sequencer: $(X87_DIR)/x87_ucode.svh $(X87_DIR)/x87_entries.svh \
 		$(X87_DIR)/x87_ucode_pkg.sv $(X87_DIR)/x87_ucode_rom.sv \
@@ -313,11 +318,11 @@ test-shared-mailbox: obj_dir_l1_shared/Vtb_l1_cache obj_dir_l1i_shared/Vtb_l1_ic
 	./obj_dir_l1_shared/Vtb_l1_cache
 	./obj_dir_l1i_shared/Vtb_l1_icache
 
-obj_dir_l1_shared/Vtb_l1_cache: tb_l1_cache.sv ../l1_cache.sv sim_main_l1_cache.cpp
+obj_dir_l1_shared/Vtb_l1_cache: tb_l1_cache.sv $(RTL_DIR)/l1_cache.sv sim_main_l1_cache.cpp
 	$(VERILATOR) $(VFLAGS_NOTRACE) --Mdir obj_dir_l1_shared \
 		-GENABLE_SHARED_MAILBOX=1 --top-module tb_l1_cache $^
 
-obj_dir_l1i_shared/Vtb_l1_icache: tb_l1_icache.sv ../l1_icache.sv sim_main_l1_icache.cpp
+obj_dir_l1i_shared/Vtb_l1_icache: tb_l1_icache.sv $(RTL_DIR)/l1_icache.sv sim_main_l1_icache.cpp
 	$(VERILATOR) $(VFLAGS_NOTRACE) --Mdir obj_dir_l1i_shared \
 		-GENABLE_SHARED_MAILBOX=1 --top-module tb_l1_icache $^
 
@@ -373,7 +378,9 @@ clean:
 	rm -rf obj_dir
 	rm -f trace.fst trace.vcd
 	rm -f result.txt
-	rm -f *.hex
+	@for file in *.hex; do \
+		[ "$$file" = ucode.hex ] || rm -f -- "$$file"; \
+	done
 
 # Help
 help:

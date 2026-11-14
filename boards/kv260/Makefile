@@ -30,7 +30,7 @@ all: firmware
 sim: sim-prepare
 	cd $(SIM_DIR) && $(XVLOG) --sv --relax -d Z486_XILINX=1 \
 		-d Z486_SIM_ENABLE_X87=1 \
-		-i $(CPU_DIR_ABS) -i $(CPU_DIR_ABS)/x87 \
+		-i $(CPU_DIR_ABS)/rtl -i $(CPU_DIR_ABS)/rtl/x87 \
 		$(SIM_SOURCES) \
 		$(CPU_DIR_ABS)/boards/common/sim/$(SIM_TOP).sv
 	cd $(SIM_DIR) && $(XELAB) --relax --mt auto --timescale 1ns/1ps \
@@ -49,8 +49,8 @@ sim-prepare:
 	od -An -v -t x4 $(SIM_DIR)/boards/firmware/blink.bin | \
 		tr -s ' ' '\n' | sed '/^$$/d' > $(SIM_DIR)/boards/firmware/blink.hex
 	test "$$(wc -l < $(SIM_DIR)/boards/firmware/blink.hex)" = 16384
-	cp $(CPU_DIR)/ucode.hex $(CPU_DIR)/pla_entry_rom.hex \
-		$(CPU_DIR)/pla_group_entry.hex $(CPU_DIR)/x87/x87_ucode.mem \
+	cp $(CPU_DIR)/src/ucode.hex $(CPU_DIR)/src/pla_entry_rom.hex \
+		$(CPU_DIR)/src/pla_group_entry.hex $(CPU_DIR)/src/x87/x87_ucode.mem \
 		$(SIM_DIR)/
 
 package: all

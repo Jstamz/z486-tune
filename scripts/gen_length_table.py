@@ -102,8 +102,8 @@ def modrm_side(addr32, mod, rm, sib_base) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--pla", type=Path, default=HERE / "pla_control.svh")
-    ap.add_argument("--out", type=Path, default=HERE / "length_table.svh")
+    ap.add_argument("--pla", type=Path, default=HERE / "rtl" / "pla_control.svh")
+    ap.add_argument("--out", type=Path, default=HERE / "rtl" / "length_table.svh")
     args = ap.parse_args()
     rows = load_opcode_pla(args.pla)
 

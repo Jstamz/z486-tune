@@ -52,8 +52,8 @@ def render_mif(words: list[int]) -> str:
 def main() -> int:
     here = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", nargs="?", type=Path, default=here / "ucode.hex")
-    parser.add_argument("output", nargs="?", type=Path, default=here / "ucode.mif")
+    parser.add_argument("input", nargs="?", type=Path, default=here / "src" / "ucode.hex")
+    parser.add_argument("output", nargs="?", type=Path, default=here / "src" / "ucode.mif")
     parser.add_argument("--check", action="store_true", help="fail if output is missing or stale")
     args = parser.parse_args()
 
