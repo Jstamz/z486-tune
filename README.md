@@ -1,5 +1,5 @@
 > **Note:** This is a fork of the [z486](https://github.com/nand2mario/z486) project
-> originally developed by nand2mario. It is not maintained or endorsed by the original author(s).
+> originally developed by [nand2mario](https://github.com/nand2mario). It is not maintained or endorsed by the original author(s).
 
 # z486: A 486-Class Pipelined FPGA CPU with Integrated Floating-Point
 
